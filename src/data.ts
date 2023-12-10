@@ -34,7 +34,36 @@ export class BunnyString implements IBunnyObject<BunnyType.string> {
 
 export class BunnyList implements IBunnyObject<BunnyType.list> {
     readonly type = BunnyType.list;
+
     constructor(readonly value: BunnyObject[]) {}
+
+    nth(n: number): BunnyObject {
+        const result = this.value[n];
+        if (!result) {
+            throw new Error(`Index ${n} out of bounds`);
+        }
+        return result;
+    }
+
+    drop(n: number): BunnyList {
+        const result = this.value.slice(n);
+        if (result.length === 0) {
+            return NIL;
+        }
+        return new BunnyList(result);
+    }
+
+    first(): BunnyObject {
+        return this.nth(0);
+    }
+
+    rest(): BunnyList {
+        return this.drop(1);
+    }
+
+    count(): number {
+        return this.value.length;
+    }
 }
 
 export type IntrinsicFn = (vm: IVirtualMachine, args: BunnyObject[]) => BunnyObject;

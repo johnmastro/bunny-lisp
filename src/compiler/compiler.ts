@@ -7,7 +7,7 @@ import {
     IVirtualMachine,
     NIL,
 } from "../data.ts";
-import { BunnyIndexError, BunnySyntaxError, BunnyTypeError } from "../errors";
+import { BunnySyntaxError, BunnyTypeError } from "../errors";
 import { BytecodeWriter } from "./bytecode-writer.ts";
 import * as symbolTable from "../reader/symbol-table.ts";
 import {
@@ -98,13 +98,13 @@ class FunctionCompiler {
             return;
         }
         for (;;) {
-            if (rest(body) === NIL) {
-                this.compileForm(first(body));
+            this.compileForm(body.first());
+            if (body.rest() === NIL) {
                 return;
             } else {
-                this.compileForm(first(body));
+                this.compileForm(body.first());
                 this.wtr.write(new InstructionPop());
-                body = rest(body);
+                body = body.rest();
             }
         }
     }
@@ -123,7 +123,7 @@ class FunctionCompiler {
     }
 
     private compileList(list: BunnyList): void {
-        const head = first(list);
+        const head = list.first();
         switch (head) {
             case FN: {
                 const fn = compileFunction(this.vm, list);
@@ -132,7 +132,7 @@ class FunctionCompiler {
                 return;
             }
             case QUOTE:
-                this.compileConst(nth(list, 1));
+                this.compileConst(list.nth(1));
                 return;
             case IF:
                 this.compileIf(list);
@@ -149,10 +149,10 @@ class FunctionCompiler {
     }
 
     private compileCall(list: BunnyList): void {
-        const count = length(list);
+        const count = list.count();
 
         for (let i = 0; i < count; i++) {
-            const form = nth(list, i);
+            const form = list.nth(i);
             this.compileForm(form);
         }
 
@@ -160,9 +160,9 @@ class FunctionCompiler {
     }
 
     private compileIf(form: BunnyList): void {
-        const testForm = nth(form, 1);
-        const thenForm = nth(form, 2);
-        const elseForm = nth(form, 3);
+        const testForm = form.nth(1);
+        const thenForm = form.nth(2)
+        const elseForm = form.nth(3);
 
         const elseLabel = this.label();
         const endLabel = this.label();
@@ -191,8 +191,8 @@ class FunctionCompiler {
         form: BunnyList,
         Instruction: typeof InstructionDef | typeof InstructionStore,
     ): void {
-        const sym = nth(form, 1);
-        const valForm = nth(form, 2);
+        const sym = form.nth(1)
+        const valForm = form.nth(2);
 
         if (sym.type !== BunnyType.symbol) {
             throw new BunnyTypeError(BunnyType.symbol, sym);
@@ -225,11 +225,11 @@ class FunctionCompiler {
 
     private macroexpandOnce(form: BunnyObject): BunnyObject {
         if (isNonNilList(form)) {
-            const head = first(form);
+            const head = form.first();
             if (head.type === BunnyType.symbol && !isSpecial(head)) {
                 const val = this.vm.lookupGlobal(head);
                 if (!!val && val.type === BunnyType.closure && val.isMacro) {
-                    const args = rest(form);
+                    const args = form.rest();
                     return this.vm.apply(val, args.value);
                 }
             }
@@ -253,8 +253,8 @@ function parse(form: BunnyObject): ParsedFunction {
 }
 
 function parseNamed(form: BunnyList): ParsedFunction {
-    const symbol = nth(form, 1);
-    const args = nth(form, 2);
+    const symbol = form.nth(1)
+    const args = form.nth(2);
     if (symbol.type !== BunnyType.symbol) {
         throw new Error(`Expected symbol name, found ${symbol}`);
     }
@@ -264,20 +264,20 @@ function parseNamed(form: BunnyList): ParsedFunction {
     return {
         symbol,
         args: parseArgList(args),
-        body: drop(form, 3), // `fn`, symbol, args
+        body: form.drop(3), // `fn`, symbol, args
     };
 }
 
 function parseAnonymous(form: BunnyList): ParsedFunction {
     const symbol = null;
-    const args = nth(form, 1);
+    const args = form.nth(1);
     if (args.type !== BunnyType.list) {
         throw new Error(`Expected args list, found ${args}`);
     }
     return {
         symbol,
         args: parseArgList(args),
-        body: drop(form, 2), // `fn` and args
+        body: form.drop(2), // `fn` and args
     };
 }
 
@@ -287,17 +287,17 @@ function parseArgList(args: BunnyList): ParsedArgList {
     const symbols: BunnySymbol[] = [];
 
     while (args !== NIL) {
-        const arg = first(args);
+        const arg = args.first()
         if (arg.type !== BunnyType.symbol) {
             throw new BunnyTypeError(BunnyType.symbol, arg);
         }
         if (arg === AMP) {
-            args = rest(args);
-            const restArg = first(args);
+            args = args.rest();
+            const restArg = args.first();
             if (restArg.type !== BunnyType.symbol) {
                 throw new BunnyTypeError(BunnyType.symbol, restArg);
             }
-            if (rest(args) !== NIL) {
+            if (args.rest() !== NIL) {
                 throw new BunnySyntaxError("Should only be one rest arg");
             }
             isVariadic = true;
@@ -306,7 +306,7 @@ function parseArgList(args: BunnyList): ParsedArgList {
         }
         nPositional += 1;
         symbols.push(arg);
-        args = rest(args);
+        args = args.rest();
     }
 
     return { nPositional, isVariadic, symbols };
@@ -327,32 +327,4 @@ function isNamed(form: BunnyList): boolean {
 
 function isSpecial(symbol: BunnySymbol): boolean {
     return specialForms.includes(symbol);
-}
-
-function nth(list: BunnyList, n: number): BunnyObject {
-    const result = list.value[n];
-    if (!result) {
-        throw new BunnyIndexError(`Index ${n} out of bounds`);
-    }
-    return result;
-}
-
-function drop(list: BunnyList, n: number): BunnyList {
-    const result = list.value.slice(n);
-    if (result.length === 0) {
-        return NIL;
-    }
-    return new BunnyList(result);
-}
-
-function first(list: BunnyList): BunnyObject {
-    return nth(list, 0);
-}
-
-function rest(list: BunnyList): BunnyList {
-    return drop(list, 1);
-}
-
-function length(list: BunnyList): number {
-    return list.value.length;
 }

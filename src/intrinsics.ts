@@ -158,7 +158,7 @@ function nth(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
         throw new BunnyTypeError(BunnyType.number, idx);
     }
     if (seq.type === BunnyType.list) {
-        return seq.value[idx.value]!;
+        return seq.nth(idx.value);
     }
     if (seq.type === BunnyType.string) {
         return new BunnyString(seq.value[idx.value]!);
@@ -172,11 +172,7 @@ function rest(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     if (arg.type !== BunnyType.list) {
         throw new BunnyTypeError(BunnyType.list, arg);
     }
-    const result = arg.value.slice(1);
-    if (!result || result.length === 0) {
-        return NIL;
-    }
-    return new BunnyList(result);
+    return arg.rest();
 }
 
 function add(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
