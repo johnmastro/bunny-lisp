@@ -16,6 +16,8 @@ import * as fs from "fs";
 
 export const EOF = new BunnySymbol("#eof");
 
+const QUOTE = symbolTable.intern("quote");
+
 export function readString(str: string): BunnyObject {
     const reader = Reader.fromString(str);
     return reader.read();
@@ -46,6 +48,9 @@ export class Reader {
         }
         if (c === '"') {
             return this.readString();
+        }
+        if (c === "'") {
+            return this.readWrapped(QUOTE);
         }
         if (isDelimiter(c)) {
             throw new BunnySyntaxError(`Invalid syntax: '${c}'`);
@@ -127,6 +132,12 @@ export class Reader {
         return result;
     }
 
+    private readWrapped(symbol: BunnySymbol): BunnyList {
+        this.stream.read(); // Move past the sigil
+        const form = this.read();
+        return new BunnyList([symbol, form]);
+    }
+
     private consumeWhitespace(): void {
         if (this.stream.eof()) {
             return;
@@ -164,5 +175,5 @@ function isWhitespace(c: string): boolean {
 }
 
 function isDelimiter(c: string): boolean {
-    return isWhitespace(c) || ["(", ")", '"', ";"].includes(c);
+    return isWhitespace(c) || ["(", ")", '"', ";", "'"].includes(c);
 }

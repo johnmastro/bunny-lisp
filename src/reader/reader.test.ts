@@ -109,9 +109,26 @@ describe("Reader", () => {
     });
     describe("whitespace before closing paren", () => {
         test("works", () => {
-            const reader = Reader.fromString("(foo bar  )");
-            expect(reader.read()).toStrictEqual(
+            const result = readString("(foo bar  )");
+            expect(result).toStrictEqual(
                 new BunnyList([new BunnySymbol("foo"), new BunnySymbol("bar")]),
+            );
+        });
+    });
+    describe("quote", () => {
+        test("on an atom", () => {
+            const result = readString("'foo");
+            expect(result).toStrictEqual(
+                new BunnyList([new BunnySymbol("quote"), new BunnySymbol("foo")]),
+            );
+        });
+        test("on a list", () => {
+            const result = readString("'(foo bar)");
+            expect(result).toStrictEqual(
+                new BunnyList([
+                    new BunnySymbol("quote"),
+                    new BunnyList([new BunnySymbol("foo"), new BunnySymbol("bar")]),
+                ]),
             );
         });
     });

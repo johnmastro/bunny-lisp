@@ -3,34 +3,34 @@
 (def defmacro
   (macro!
    (fn defmacro (name args & body)
-     (list (quote def) name
-           (list (quote macro!)
-                 (list* (quote fn) name args body))))))
+     (list 'def name
+           (list 'macro!
+                 (list* 'fn name args body))))))
 
 (defmacro defn (name args & body)
-  (list (quote def) name
-        (list* (quote fn) name args body)))
+  (list 'def name
+        (list* 'fn name args body)))
 
 (defn instance? (obj type)
   (identical? (type-of obj) type))
 
 (defn number? (obj)
-  (instance? obj (quote number)))
+  (instance? obj 'number))
 
 (defn symbol? (obj)
-  (instance? obj (quote symbol)))
+  (instance? obj 'symbol))
 
 (defn string? (obj)
-  (instance? obj (quote string)))
+  (instance? obj 'string))
 
 (defn list? (obj)
-  (instance? obj (quote list)))
+  (instance? obj 'list))
 
 (defn closure? (obj)
-  (instance? obj (quote closure)))
+  (instance? obj 'closure))
 
 (defn intrinsic? (obj)
-  (instance? obj (quote intrinsic)))
+  (instance? obj 'intrinsic))
 
 (defn function? (obj)
   ;; We don't have `or` yet
@@ -82,15 +82,15 @@
              xs))
 
 (defmacro do (& body)
-  (list (cons (quote fn) (cons () body))))
+  (list (cons 'fn (cons () body))))
 
 (defmacro let (bindings & body)
   (fold-right (fn (bind acc)
-                (list (list (quote fn)
+                (list (list 'fn
                             (list (first bind))
                             acc)
                       (second bind)))
-              (cons (quote do) body)
+              (cons 'do body)
               bindings))
 
 (defmacro or (& forms)
@@ -99,8 +99,8 @@
     (if (nil? (rest forms))
       (first forms)
       (let ((sym (gensym)))
-        (list (quote let) (list (list sym (first forms)))
-              (list (quote if) sym sym (cons (quote or) (rest forms))))))))
+        (list 'let (list (list sym (first forms)))
+              (list 'if sym sym (cons 'or (rest forms))))))))
 
 (defmacro and (& forms)
   (if (nil? forms)
@@ -108,14 +108,14 @@
     (if (nil? (rest forms))
       (first forms)
       (let ((sym (gensym)))
-        (list (quote let) (list (list sym (first forms)))
-              (list (quote if) sym (cons (quote and) (rest forms)) sym))))))
+        (list 'let (list (list sym (first forms)))
+              (list 'if sym (cons 'and (rest forms)) sym))))))
 
 (defmacro cond (& clauses)
   (fold-right (fn (clause acc)
                 (let ((test-form (first clause))
-                      (then-form (cons (quote do) (rest clause))))
-                  (list (quote if)
+                      (then-form (cons 'do (rest clause))))
+                  (list 'if
                         test-form
                         then-form
                         acc)))
@@ -124,21 +124,21 @@
 
 (defmacro letfn (bindings & body)
   (if (nil? bindings)
-    (cons (quote do) body)
+    (cons 'do body)
     (let ((names (map first bindings))
           (defns (map (fn (bind)
                         (let ((name (nth bind 0))
                               (args (nth bind 1))
                               (body (rest (rest bind))))
-                          (list (quote set!)
+                          (list 'set!
                                 name
-                                (list* (quote fn) name args body))))
+                                (list* 'fn name args body))))
                       bindings)))
-      (list (quote apply)
-            (list (quote fn)
+      (list 'apply
+            (list 'fn
                   names
-                  (concat (cons (quote do) defns) body))
-            (cons (quote list) (map (constantly nil) names))))))
+                  (concat (cons 'do defns) body))
+            (cons 'list (map (constantly nil) names))))))
 
 (defn range (start stop)
   (letfn ((step (start stop acc)
