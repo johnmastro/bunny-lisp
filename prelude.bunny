@@ -1,0 +1,141 @@
+;; -*- clojure -*-
+
+(def defmacro
+  (macro!
+   (fn defmacro (name args & body)
+     (list (quote def) name
+           (list (quote macro!)
+                 (cons (quote fn) (cons name (cons args body))))))))
+
+(defmacro defn (name args & body)
+  (list (quote def) name
+        (cons (quote fn) (cons name (cons args body)))))
+
+(defn instance? (obj type)
+  (identical? (type-of obj) type))
+
+(defn number? (obj)
+  (instance? obj (quote number)))
+
+(defn symbol? (obj)
+  (instance? obj (quote symbol)))
+
+(defn string? (obj)
+  (instance? obj (quote string)))
+
+(defn list? (obj)
+  (instance? obj (quote list)))
+
+(defn closure? (obj)
+  (instance? obj (quote closure)))
+
+(defn intrinsic? (obj)
+  (instance? obj (quote intrinsic)))
+
+(defn function? (obj)
+  ;; We don't have `or` yet
+  (if (closure? obj)
+    true
+    (intrinsic? obj)))
+
+(defn nil? (x)
+  (identical? x nil))
+
+(defn not (x)
+  (if x false true))
+
+(defn first (xs)   (nth xs 0))
+(defn second (xs)  (nth xs 1))
+(defn third (xs)   (nth xs 2))
+(defn fourth (xs)  (nth xs 3))
+(defn fifth (xs)   (nth xs 4))
+(defn sixth (xs)   (nth xs 5))
+(defn seventh (xs) (nth xs 6))
+(defn eighth (xs)  (nth xs 7))
+(defn ninth (xs)   (nth xs 8))
+(defn tenth (xs)   (nth xs 9))
+
+(defn identity (x)
+  x)
+
+(defn constantly (x)
+  (fn (& args) x))
+
+(defn fold-left (f val xs)
+  (if xs
+    (fold-left f (f val (first xs)) (rest xs))
+    val))
+
+(defn fold-right (f val xs)
+  (if xs
+      (f (first xs) (fold-right f val (rest xs)))
+      val))
+
+(defn map (f xs)
+  (fold-left (fn (acc x) (append acc (f x)))
+             nil
+             xs))
+
+(defn filter (pred? xs)
+  (fold-left (fn (acc x) (if (pred? x) (append acc x) acc))
+             nil
+             xs))
+
+(defmacro do (& body)
+  (list (cons (quote fn) (cons () body))))
+
+(defmacro let (bindings & body)
+  (fold-right (fn (bind acc)
+                (list (list (quote fn)
+                            (list (nth bind 0))
+                            acc)
+                      (nth bind 1)))
+              (cons (quote do) body)
+              bindings))
+
+(defmacro or (& forms)
+  (if (nil? forms)
+    nil
+    (if (nil? (rest forms))
+      (first forms)
+      (let ((sym (gensym)))
+        (list (quote let) (list (list sym (first forms)))
+              (list (quote if) sym sym (cons (quote or) (rest forms))))))))
+
+(defmacro and (& forms)
+  (if (nil? forms)
+    true
+    (if (nil? (rest forms))
+      (first forms)
+      (let ((sym (gensym)))
+        (list (quote let) (list (list sym (first forms)))
+              (list (quote if) sym (cons (quote and) (rest forms)) sym))))))
+
+(defmacro letfn (bindings & body)
+  (if (nil? bindings)
+    (cons (quote do) body)
+    (let ((names (map first bindings))
+          (defns (map (fn (bind)
+                        (let ((name (nth bind 0))
+                              (args (nth bind 1))
+                              (body (rest (rest bind))))
+                          (list (quote set!)
+                                name
+                                (cons (quote fn)
+                                      (cons name
+                                            (cons args body))))))
+                      bindings)))
+      (list (quote apply)
+            (list (quote fn)
+                  names
+                  (concat (cons (quote do) defns) body))
+            (cons (quote list) (map (constantly nil) names))))))
+
+(defn range (start stop)
+  (letfn ((step (start stop acc)
+            (print acc)
+            (if (< start stop)
+              (step (+ start 1) stop (append acc start))
+              acc)))
+    (step start stop nil)))
+

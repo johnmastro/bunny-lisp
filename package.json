@@ -1,0 +1,25 @@
+{
+  "name": "bunny-lisp",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "bunny": "bun ./src/index.ts",
+    "test:types": "bunx tsc",
+    "format": "bunx prettier --write ./src",
+    "lint": "bunx eslint ."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
+    "bun-types": "latest",
+    "eslint": "^8.55.0",
+    "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.1.0",
+    "tsc": "^2.0.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}
