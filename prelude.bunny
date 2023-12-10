@@ -5,11 +5,11 @@
    (fn defmacro (name args & body)
      (list (quote def) name
            (list (quote macro!)
-                 (cons (quote fn) (cons name (cons args body))))))))
+                 (list* (quote fn) name args body))))))
 
 (defmacro defn (name args & body)
   (list (quote def) name
-        (cons (quote fn) (cons name (cons args body)))))
+        (list* (quote fn) name args body)))
 
 (defn instance? (obj type)
   (identical? (type-of obj) type))
@@ -121,9 +121,7 @@
                               (body (rest (rest bind))))
                           (list (quote set!)
                                 name
-                                (cons (quote fn)
-                                      (cons name
-                                            (cons args body))))))
+                                (list* (quote fn) name args body))))
                       bindings)))
       (list (quote apply)
             (list (quote fn)

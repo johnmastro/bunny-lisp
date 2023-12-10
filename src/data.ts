@@ -37,6 +37,10 @@ export class BunnyList implements IBunnyObject<BunnyType.list> {
 
     constructor(readonly value: BunnyObject[]) {}
 
+    cons(obj: BunnyObject): BunnyList {
+        return new BunnyList([obj, ...this.value]);
+    }
+
     nth(n: number): BunnyObject {
         const result = this.value[n];
         if (!result) {

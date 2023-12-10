@@ -30,6 +30,7 @@ type Intrinsic =
     | "gensym"
     | "cons"
     | "list"
+    | "list*"
     | "append"
     | "concat"
     | "nth"
@@ -99,6 +100,20 @@ function cons(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
 
 function list(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     return new BunnyList(args);
+}
+
+function listStar(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
+    checkArgs(args, { minArgs: 2 });
+    const lastArg = getArg(args, args.length - 1);
+    if (lastArg.type !== BunnyType.list) {
+        throw new BunnyTypeError(BunnyType.list, lastArg);
+    }
+    let result: BunnyList = lastArg;
+    for (let i = args.length - 2; i >= 0; i--) {
+        const arg = getArg(args, i);
+        result = result.cons(arg);
+    }
+    return result;
 }
 
 function append(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
@@ -345,6 +360,7 @@ export const intrinsics: Record<Intrinsic, IntrinsicFn> = {
     concat,
     print,
     load,
+    ["list*"]: listStar,
     ["identical?"]: identicalp,
     ["equal?"]: equalp,
     ["type-of"]: typeOf,
