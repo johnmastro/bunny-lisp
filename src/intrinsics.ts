@@ -44,14 +44,14 @@ type Intrinsic =
     | "print"
     | "load";
 
-function identicalp(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function identicalp(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const arg0 = getArg(args, 0);
     const arg1 = getArg(args, 1);
     return bool(arg0 === arg1);
 }
 
-function equalp(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function equalp(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const arg0 = getArg(args, 0);
     const arg1 = getArg(args, 1);
@@ -59,13 +59,13 @@ function equalp(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return bool(result);
 }
 
-function typeOf(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function typeOf(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 0);
     return symbolTable.intern(`${arg.type}`);
 }
 
-function intern(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function intern(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 1);
     if (arg.type !== BunnyType.string) {
@@ -74,7 +74,7 @@ function intern(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return symbolTable.intern(arg.value);
 }
 
-function gensym(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function gensym(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 0, maxArgs: 1 });
     if (args.length === 0) {
         return symbolTable.gensym();
@@ -86,7 +86,7 @@ function gensym(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return symbolTable.gensym(arg.value);
 }
 
-function cons(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function cons(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const fst = getArg(args, 0);
     const rst = getArg(args, 1);
@@ -97,11 +97,11 @@ function cons(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyList(result);
 }
 
-function list(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function list(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     return new BunnyList(args);
 }
 
-function append(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function append(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const seq = getArg(args, 0);
     const val = getArg(args, 1);
@@ -114,7 +114,7 @@ function append(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     throw new BunnyTypeError([BunnyType.list, BunnyType.string], seq);
 }
 
-function concat(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function concat(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1 });
     const arg = getArg(args, 0);
     if (arg.type === BunnyType.list) {
@@ -150,7 +150,7 @@ function concatStrings(str: BunnyString, more: BunnyObject[]): BunnyString {
     return new BunnyString(result);
 }
 
-function nth(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function nth(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const seq = getArg(args, 0);
     const idx = getArg(args, 1);
@@ -166,7 +166,7 @@ function nth(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     throw new BunnyTypeError([BunnyType.list, BunnyType.string], seq);
 }
 
-function rest(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function rest(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 0);
     if (arg.type !== BunnyType.list) {
@@ -179,7 +179,7 @@ function rest(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyList(result);
 }
 
-function add(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function add(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     let result = 0;
     for (const arg of args) {
         if (arg.type !== BunnyType.number) {
@@ -190,7 +190,7 @@ function add(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyNumber(result);
 }
 
-function sub(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function sub(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     if (args.length === 0) {
         return new BunnyNumber(0);
     }
@@ -212,7 +212,7 @@ function sub(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyNumber(result);
 }
 
-function mul(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function mul(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     let result = 1;
     for (const arg of args) {
         if (arg.type !== BunnyType.number) {
@@ -223,7 +223,7 @@ function mul(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyNumber(result);
 }
 
-function div(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function div(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1 });
     let arg = getArg(args, 0);
     if (arg.type !== BunnyType.number) {
@@ -240,12 +240,12 @@ function div(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return new BunnyNumber(result);
 }
 
-function lt(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function lt(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     const result = compare('<', args);
     return bool(result);
 }
 
-function gt(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function gt(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     const result = compare('>', args);
     return bool(result);
 }
@@ -263,7 +263,7 @@ function compare(comp: '<' | '>', args: BunnyObject[]): boolean {
     return comp === '<' ? n.value < m.value : n.value > m.value;
 }
 
-function macro(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function macro(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 0);
     if (arg.type !== BunnyType.closure) {
@@ -273,14 +273,14 @@ function macro(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return arg;
 }
 
-function print(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function print(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 0);
     printLn(arg);
     return NIL;
 }
 
-function load(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function load(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
     const arg = getArg(args, 0);
     if (arg.type !== BunnyType.string) {
@@ -290,7 +290,7 @@ function load(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
     return NIL;
 }
 
-function apply(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
+function apply(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const fn = getArg(args, 0);
     const xs = getArg(args, 1);
@@ -298,7 +298,7 @@ function apply(vm: IVirtualMachine, ...args: BunnyObject[]): BunnyObject {
         throw new BunnyTypeError(BunnyType.list, xs);
     }
     if (fn.type === BunnyType.intrinsic) {
-        return fn.value(vm, ...xs.value);
+        return fn.value(vm, xs.value);
     }
     if (fn.type === BunnyType.closure) {
         return vm.apply(fn, xs.value);

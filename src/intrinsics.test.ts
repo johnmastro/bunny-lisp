@@ -11,11 +11,11 @@ const mockVm = undefined as any;
 describe("intrinsics", () => {
     describe("+", () => {
         test("returns 0 if called with zero args", () => {
-            const result = intrinsics["+"](mockVm);
+            const result = intrinsics["+"](mockVm, []);
             expect(result).toStrictEqual(new BunnyNumber(0));
         });
         test("returns the sum of the numbers", () => {
-            const result = intrinsics["+"](mockVm, one, two);
+            const result = intrinsics["+"](mockVm, [one, two]);
             expect(result).toStrictEqual(new BunnyNumber(3));
         });
     });

@@ -188,7 +188,7 @@ export class VirtualMachine implements IVirtualMachine {
                                 this.sp - instruction.nargs,
                                 this.sp,
                             );
-                            const result = callable.value(this, ...args);
+                            const result = callable.value(this, args);
                             this.sp -= instruction.nargs;
                             this.stack[this.sp - 1] = result;
                             debug("INTRINSIC", {

@@ -37,7 +37,7 @@ export class BunnyList implements IBunnyObject<BunnyType.list> {
     constructor(readonly value: BunnyObject[]) {}
 }
 
-export type IntrinsicFn = (vm: IVirtualMachine, ...args: BunnyObject[]) => BunnyObject;
+export type IntrinsicFn = (vm: IVirtualMachine, args: BunnyObject[]) => BunnyObject;
 
 export class BunnyIntrinsic implements IBunnyObject<BunnyType.intrinsic> {
     readonly type = BunnyType.intrinsic;
