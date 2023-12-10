@@ -35,21 +35,11 @@ import { intrinsics } from "../intrinsics.ts";
 import * as symbolTable from "../reader/symbol-table.ts";
 import { debug } from "../debug.ts";
 
-export interface VirtualMachineOptions {
-    inhibitLoadingIntrinsics?: boolean;
-}
-
 export class VirtualMachine implements IVirtualMachine {
     private sp = 0;
     private currentFrame = 0;
     private readonly stack: StackElement[] = [];
-    private readonly globals: Environment;
-
-    constructor(opts?: VirtualMachineOptions) {
-        this.globals = opts?.inhibitLoadingIntrinsics
-            ? new Environment([], null)
-            : VirtualMachine.intrinsicsEnvironment();
-    }
+    private readonly globals = VirtualMachine.intrinsicsEnvironment();
 
     apply(fn: BunnyClosure, args: BunnyObject[]): BunnyObject {
         debug("APPLY", { fn: fn.name, args });
