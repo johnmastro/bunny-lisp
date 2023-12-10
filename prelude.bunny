@@ -87,9 +87,9 @@
 (defmacro let (bindings & body)
   (fold-right (fn (bind acc)
                 (list (list (quote fn)
-                            (list (nth bind 0))
+                            (list (first bind))
                             acc)
-                      (nth bind 1)))
+                      (second bind)))
               (cons (quote do) body)
               bindings))
 
@@ -110,6 +110,17 @@
       (let ((sym (gensym)))
         (list (quote let) (list (list sym (first forms)))
               (list (quote if) sym (cons (quote and) (rest forms)) sym))))))
+
+(defmacro cond (& clauses)
+  (fold-right (fn (clause acc)
+                (let ((test-form (first clause))
+                      (then-form (cons (quote do) (rest clause))))
+                  (list (quote if)
+                        test-form
+                        then-form
+                        acc)))
+              nil
+              clauses))
 
 (defmacro letfn (bindings & body)
   (if (nil? bindings)

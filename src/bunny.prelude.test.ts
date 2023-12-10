@@ -192,10 +192,30 @@ describe("prelude", () => {
         });
         test("positive length", () => {
             const result = vm.loadString("(range 0 2)");
-            expect(result).toStrictEqual(new BunnyList([
-                new BunnyNumber(0),
-                new BunnyNumber(1)
-            ]));
+            expect(result).toStrictEqual(
+                new BunnyList([new BunnyNumber(0), new BunnyNumber(1)]),
+            );
         });
-    })
+    });
+    describe("cond", () => {
+        test("no clauses", () => {
+            const result = vm.loadString("(cond)");
+            expect(result).toStrictEqual(NIL);
+        });
+        test("one true clause", () => {
+            const result = vm.loadString('(cond ((equal? 1 1) "yes"))');
+            expect(result).toStrictEqual(new BunnyString("yes"));
+        });
+        test("one false clause", () => {
+            const result = vm.loadString('(cond ((equal? 1 2) "yes"))');
+            expect(result).toStrictEqual(NIL);
+        });
+        test("two clauses", () => {
+            const result = vm.loadString(`
+            (cond ((equal? 1 2) "first")
+                  ((equal? 1 1) "second"))
+            `);
+            expect(result).toStrictEqual(new BunnyString("second"));
+        });
+    });
 });

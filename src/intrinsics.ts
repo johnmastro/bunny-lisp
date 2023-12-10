@@ -252,16 +252,16 @@ function div(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
 }
 
 function lt(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
-    const result = compare('<', args);
+    const result = compare("<", args);
     return bool(result);
 }
 
 function gt(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
-    const result = compare('>', args);
+    const result = compare(">", args);
     return bool(result);
 }
 
-function compare(comp: '<' | '>', args: BunnyObject[]): boolean {
+function compare(comp: "<" | ">", args: BunnyObject[]): boolean {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const n = getArg(args, 0);
     if (n.type !== BunnyType.number) {
@@ -271,7 +271,7 @@ function compare(comp: '<' | '>', args: BunnyObject[]): boolean {
     if (m.type !== BunnyType.number) {
         throw new BunnyTypeError(BunnyType.number, m);
     }
-    return comp === '<' ? n.value < m.value : n.value > m.value;
+    return comp === "<" ? n.value < m.value : n.value > m.value;
 }
 
 function macro(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {

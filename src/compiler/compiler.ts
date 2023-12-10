@@ -161,7 +161,7 @@ class FunctionCompiler {
 
     private compileIf(form: BunnyList): void {
         const testForm = form.nth(1);
-        const thenForm = form.nth(2)
+        const thenForm = form.nth(2);
         const elseForm = form.nth(3);
 
         const elseLabel = this.label();
@@ -191,7 +191,7 @@ class FunctionCompiler {
         form: BunnyList,
         Instruction: typeof InstructionDef | typeof InstructionStore,
     ): void {
-        const sym = form.nth(1)
+        const sym = form.nth(1);
         const valForm = form.nth(2);
 
         if (sym.type !== BunnyType.symbol) {
@@ -253,7 +253,7 @@ function parse(form: BunnyObject): ParsedFunction {
 }
 
 function parseNamed(form: BunnyList): ParsedFunction {
-    const symbol = form.nth(1)
+    const symbol = form.nth(1);
     const args = form.nth(2);
     if (symbol.type !== BunnyType.symbol) {
         throw new Error(`Expected symbol name, found ${symbol}`);
@@ -287,7 +287,7 @@ function parseArgList(args: BunnyList): ParsedArgList {
     const symbols: BunnySymbol[] = [];
 
     while (args !== NIL) {
-        const arg = args.first()
+        const arg = args.first();
         if (arg.type !== BunnyType.symbol) {
             throw new BunnyTypeError(BunnyType.symbol, arg);
         }
