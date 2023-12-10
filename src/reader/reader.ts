@@ -42,7 +42,7 @@ export class Reader {
         if (this.stream.eof()) {
             return EOF;
         }
-        const c = this.stream.peek();
+        const c = this.stream.read();
         if (c === "(") {
             return this.readList();
         }
@@ -55,21 +55,18 @@ export class Reader {
         if (isDelimiter(c)) {
             throw new BunnySyntaxError(`Invalid syntax: '${c}'`);
         }
+        this.stream.unread(c);
         return this.readAtom();
     }
 
     private readList(): BunnyObject {
         const result: BunnyObject[] = [];
-        let c = this.stream.read();
-        if (c !== "(") {
-            throw new BunnySyntaxError("Expected opening list delimiter");
-        }
         for (;;) {
             this.consumeWhitespace();
             if (this.stream.eof()) {
                 throw new BunnySyntaxError("list");
             }
-            c = this.stream.read();
+            const c = this.stream.read();
             if (c === ")") {
                 return result.length === 0 ? NIL : new BunnyList(result);
             }
@@ -81,15 +78,11 @@ export class Reader {
 
     private readString(): BunnyObject {
         let result = "";
-        let c = this.stream.read();
-        if (c !== '"') {
-            throw new BunnySyntaxError("Expected opening string delimiter");
-        }
         for (;;) {
             if (this.stream.eof()) {
                 throw new BunnyEofError("string");
             }
-            c = this.stream.read();
+            const c = this.stream.read();
             if (c === '"') {
                 return new BunnyString(result);
             }
@@ -133,7 +126,6 @@ export class Reader {
     }
 
     private readWrapped(symbol: BunnySymbol): BunnyList {
-        this.stream.read(); // Move past the sigil
         const form = this.read();
         return new BunnyList([symbol, form]);
     }
