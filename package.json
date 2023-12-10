@@ -1,5 +1,7 @@
 {
   "name": "bunny-lisp",
+  "author": "John Mastro",
+  "license": "ISC",
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
