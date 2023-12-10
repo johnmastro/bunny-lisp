@@ -133,7 +133,6 @@
 
 (defn range (start stop)
   (letfn ((step (start stop acc)
-            (print acc)
             (if (< start stop)
               (step (+ start 1) stop (append acc start))
               acc)))
