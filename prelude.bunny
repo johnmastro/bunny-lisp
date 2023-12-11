@@ -122,6 +122,8 @@
               nil
               clauses))
 
+(def :else true)
+
 (defmacro letfn (bindings & body)
   (if (nil? bindings)
     (cons 'do body)
@@ -147,3 +149,23 @@
               acc)))
     (step start stop nil)))
 
+(defmacro quasiquote (form)
+  (letfn ((cons? (obj)
+            (and obj (list? obj)))
+          (transform-qq (form)
+            (if (cons? form)
+              (cond ((equal? (first form) 'unquote)
+                     (second form))
+                    ((equal? (first form) 'quasiquote)
+                     (transform-qq (transform-qq (second form))))
+                    ((and (cons? (first form))
+                          (equal? (first (first form)) 'unquote-splicing))
+                     (list 'concat
+                           (second (first form))
+                           (transform-qq (rest form))))
+                    (:else
+                     (list 'cons
+                           (transform-qq (first form))
+                           (transform-qq (rest form)))))
+              (list 'quote form))))
+    (transform-qq form)))

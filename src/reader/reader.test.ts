@@ -132,4 +132,19 @@ describe("Reader", () => {
             );
         });
     });
+    describe("quasiquote", () => {
+        const result = readString("`(~foo ~@bar)");
+        expect(result).toStrictEqual(
+            new BunnyList([
+                new BunnySymbol("quasiquote"),
+                new BunnyList([
+                    new BunnyList([new BunnySymbol("unquote"), new BunnySymbol("foo")]),
+                    new BunnyList([
+                        new BunnySymbol("unquote-splicing"),
+                        new BunnySymbol("bar"),
+                    ]),
+                ]),
+            ]),
+        );
+    });
 });

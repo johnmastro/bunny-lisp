@@ -17,6 +17,9 @@ import * as fs from "fs";
 export const EOF = new BunnySymbol("#eof");
 
 const QUOTE = symbolTable.intern("quote");
+const QUASIQUOTE = symbolTable.intern("quasiquote");
+const UNQUOTE = symbolTable.intern("unquote");
+const UNQUOTE_SPLICING = symbolTable.intern("unquote-splicing");
 
 export function readString(str: string): BunnyObject {
     const reader = Reader.fromString(str);
@@ -43,20 +46,24 @@ export class Reader {
             return EOF;
         }
         const c = this.stream.read();
-        if (c === "(") {
-            return this.readList();
+        switch (c) {
+            case "(":
+                return this.readList();
+            case '"':
+                return this.readString();
+            case "'":
+                return this.readWrapped(QUOTE);
+            case "`":
+                return this.readWrapped(QUASIQUOTE);
+            case "~":
+                return this.readUnquote();
+            default:
+                if (isDelimiter(c)) {
+                    throw new BunnySyntaxError(`Invalid syntax: '${c}'`);
+                }
+                this.stream.unread(c);
+                return this.readAtom();
         }
-        if (c === '"') {
-            return this.readString();
-        }
-        if (c === "'") {
-            return this.readWrapped(QUOTE);
-        }
-        if (isDelimiter(c)) {
-            throw new BunnySyntaxError(`Invalid syntax: '${c}'`);
-        }
-        this.stream.unread(c);
-        return this.readAtom();
     }
 
     private readList(): BunnyObject {
@@ -130,6 +137,15 @@ export class Reader {
         return new BunnyList([symbol, form]);
     }
 
+    private readUnquote(): BunnyList {
+        const c = this.stream.read();
+        if (c === "@") {
+            return this.readWrapped(UNQUOTE_SPLICING);
+        }
+        this.stream.unread(c);
+        return this.readWrapped(UNQUOTE);
+    }
+
     private consumeWhitespace(): void {
         if (this.stream.eof()) {
             return;
@@ -167,5 +183,5 @@ function isWhitespace(c: string): boolean {
 }
 
 function isDelimiter(c: string): boolean {
-    return isWhitespace(c) || ["(", ")", '"', ";", "'"].includes(c);
+    return isWhitespace(c) || ["(", ")", '"', ";", "'", "`", "~"].includes(c);
 }
