@@ -198,6 +198,7 @@ export interface IVirtualMachine {
     compileFunction(form: BunnyObject): BunnyClosure;
     compileThunk(form: BunnyObject): BunnyClosure;
     macroexpand(form: BunnyObject): BunnyObject;
+    macroexpandOnce(form: BunnyObject): BunnyObject;
     loadFile(file: string): BunnyObject | null;
     loadString(str: string): BunnyObject | null;
     lookupGlobal(symbol: BunnySymbol): BunnyObject | null;

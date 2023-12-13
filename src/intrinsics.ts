@@ -20,6 +20,7 @@ import {
 import * as symbolTable from "./reader/symbol-table.ts";
 import { equal } from "./equal.ts";
 import { printLn } from "./printer.ts";
+import * as reader from "./reader/reader.ts";
 
 type Intrinsic =
     | "apply"
@@ -43,7 +44,10 @@ type Intrinsic =
     | ">"
     | "macro!"
     | "print"
-    | "load";
+    | "load"
+    | "read-string"
+    | "macroexpand"
+    | "macroexpand1";
 
 function identicalp(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
@@ -68,7 +72,7 @@ function typeOf(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
 
 function intern(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 1, maxArgs: 1 });
-    const arg = getArg(args, 1);
+    const arg = getArg(args, 0);
     if (arg.type !== BunnyType.string) {
         throw new BunnyTypeError(BunnyType.string, arg);
     }
@@ -301,6 +305,27 @@ function load(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     return NIL;
 }
 
+function readString(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
+    checkArgs(args, { minArgs: 1, maxArgs: 1 });
+    const arg = getArg(args, 0);
+    if (arg.type !== BunnyType.string) {
+        throw new BunnyTypeError(BunnyType.string, arg);
+    }
+    return reader.readString(arg.value);
+}
+
+function macroexpand(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
+    checkArgs(args, { minArgs: 1, maxArgs: 1 });
+    const arg = getArg(args, 0);
+    return vm.macroexpand(arg);
+}
+
+function macroexpand1(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
+    checkArgs(args, { minArgs: 1, maxArgs: 1 });
+    const arg = getArg(args, 0);
+    return vm.macroexpandOnce(arg);
+}
+
 function apply(vm: IVirtualMachine, args: BunnyObject[]): BunnyObject {
     checkArgs(args, { minArgs: 2, maxArgs: 2 });
     const fn = getArg(args, 0);
@@ -360,6 +385,9 @@ export const intrinsics: Record<Intrinsic, IntrinsicFn> = {
     concat,
     print,
     load,
+    macroexpand,
+    macroexpand1,
+    ["read-string"]: readString,
     ["list*"]: listStar,
     ["identical?"]: identicalp,
     ["equal?"]: equalp,

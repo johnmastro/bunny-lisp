@@ -14,6 +14,6 @@ export function intern(name: string): BunnySymbol {
 }
 
 export function gensym(name?: string): BunnySymbol {
-    const gensymName = `${name || "gensym"}-${randomBytes(2).toString("hex")}`;
+    const gensymName = `#${name || "gensym"}-${randomBytes(2).toString("hex")}`;
     return new BunnySymbol(gensymName);
 }

@@ -66,6 +66,10 @@ export class VirtualMachine implements IVirtualMachine {
         return compiler.macroexpand(this, form);
     }
 
+    macroexpandOnce(form: BunnyObject): BunnyObject {
+        return compiler.macroexpandOnce(this, form);
+    }
+
     loadFile(file: string): BunnyObject | null {
         const reader = Reader.fromFile(file);
         return this.loadFromReader(reader);

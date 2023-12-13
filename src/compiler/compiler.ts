@@ -49,6 +49,11 @@ export function macroexpand(vm: IVirtualMachine, form: BunnyObject): BunnyObject
     return compiler.macroexpand(form);
 }
 
+export function macroexpandOnce(vm: IVirtualMachine, form: BunnyObject): BunnyObject {
+    const compiler = new FunctionCompiler(vm);
+    return compiler.macroexpandOnce(form);
+}
+
 interface ParsedArgList {
     readonly nPositional: number;
     readonly isVariadic: boolean;
@@ -90,6 +95,20 @@ class FunctionCompiler {
             }
             form = result;
         }
+    }
+
+    macroexpandOnce(form: BunnyObject): BunnyObject {
+        if (isNonNilList(form)) {
+            const head = form.first();
+            if (head.type === BunnyType.symbol && !isSpecial(head)) {
+                const val = this.vm.lookupGlobal(head);
+                if (!!val && val.type === BunnyType.closure && val.isMacro) {
+                    const args = form.rest();
+                    return this.vm.apply(val, args.value);
+                }
+            }
+        }
+        return form;
     }
 
     private compileBody(body: BunnyList): void {
@@ -221,20 +240,6 @@ class FunctionCompiler {
         }
         this.constants.push(val);
         return this.constants.length - 1;
-    }
-
-    private macroexpandOnce(form: BunnyObject): BunnyObject {
-        if (isNonNilList(form)) {
-            const head = form.first();
-            if (head.type === BunnyType.symbol && !isSpecial(head)) {
-                const val = this.vm.lookupGlobal(head);
-                if (!!val && val.type === BunnyType.closure && val.isMacro) {
-                    const args = form.rest();
-                    return this.vm.apply(val, args.value);
-                }
-            }
-        }
-        return form;
     }
 
     private label(): InstructionLabel {
